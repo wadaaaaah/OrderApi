@@ -1,29 +1,41 @@
 package com.accenture.order.controller;
 
-import brave.Tracer;
-import com.accenture.magicwand.repository.MagicWandRepository;
+import com.accenture.order.entity.Order;
+import com.accenture.order.repository.OrderRepository;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
+import com.accenture.order.service.OrderService;
 
 @RestController
-@RequestMapping("/MagicWandApi")
-public class MagicWandController {
+@RequestMapping("/OrderApi")
+public class OrderController {
 
-    private final MagicWandRepository repo;
+    private final RestTemplate restTemplate;
+    private final OrderService orderService;
 
-    Tracer tracer;
+    private final OrderRepository repo;
 
-    public MagicWandController(MagicWandRepository repo, Tracer tracer) {
+    public OrderController(OrderService orderService, RestTemplateBuilder restTemplateBuilder, OrderRepository repo) {
+        this.restTemplate = restTemplateBuilder.build();
+        this.orderService = orderService;
         this.repo = repo;
-        this.tracer = tracer;
     }
 
-    @GetMapping("/getInfo/{id}")
-    public ResponseEntity<?> test(@PathVariable(value = "id") long id) {
-        System.out.println(tracer.currentSpan().context().traceIdString());
-        return ResponseEntity.ok(repo.findById(id).get());
+
+
+    @PostMapping("/add")
+    public ResponseEntity<?> addOrder(@RequestBody Order order){
+        Order newOrder = new Order();
+        newOrder.setWizard_name(order.getWizard_name());
+        newOrder.setMagic_name(order.getMagic_name());
+        newOrder.setAge_limit(order.getAge_limit());
+
+        return ResponseEntity.ok(repo.save(newOrder));
     }
+
+
+
+
 }
