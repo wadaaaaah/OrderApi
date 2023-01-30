@@ -12,6 +12,4 @@ public class OrderConfig {
         return new RestTemplate();
     }
 
-
-
 }

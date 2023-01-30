@@ -21,19 +21,20 @@ public class Order {
 
     //@NotNull(message = "Wand id should not be null")
     Long magic_id;
-    String wizard_name;
     String magic_name;
+    String wizard_name;
+    int stock;
     int age_limit;
 
     public Order(){
 
     }
 
-    public Order(Long orderId, Long wizardId, Long magicId, int ageLimit){
+    public Order(Long orderId, Long wizardId, Long magicId, int stock){
         this.order_id = orderId;
         this.wizard_id = wizardId;
         this.magic_id = magicId;
-        this.age_limit = ageLimit;
+        this.stock = stock;
     }
 
 
