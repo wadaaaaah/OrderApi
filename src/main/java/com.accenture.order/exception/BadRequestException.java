@@ -4,12 +4,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-public class OrderException extends RuntimeException {
+public class BadRequestException {
 
-    public static final String INVALID_ID = "Order Id not found";
+    public static final String BAD_REQUEST = "Bad Request error is encountered";
 
-    public OrderException(String errorMessage) {
-        super(errorMessage);
+    public BadRequestException(String errorMessage) {
+        super();
     }
 
 }

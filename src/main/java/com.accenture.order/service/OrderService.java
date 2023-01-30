@@ -1,48 +1,34 @@
 package com.accenture.order.service;
 
+import com.accenture.order.entity.Order;
+import com.accenture.order.exception.OrderNotFoundException;
+import com.accenture.order.integration.OrderIntegration;
+import com.accenture.order.repository.OrderRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 @Slf4j
+@Service
 public class OrderService {
 
-    private final RestTemplate restTemplate;
+    @Autowired
+    private OrderIntegration orderIntegration;
+    @Autowired
+    OrderRepository repo;
+    @Autowired
+    private WizardInfoService wizard;
+    @Autowired
+    private MagicWandService magic;
 
-    private static final String GET_WIZARD_ID = "http://localhost:8090/WizardInfoApi/getInfo/{id}";
-    private static final String GET_MAGIC_ID = "http://localhost:8090/MagicWandApi/getInfo/{id}";
+    RestTemplate restTemplate = new RestTemplate();
 
-    public OrderService(RestTemplateBuilder restTemplateBuilder){
-        this.restTemplate = restTemplateBuilder.build();
+    public Order getOrderbyId(Long id){
+        return repo.findById(id).orElseThrow(() -> new OrderNotFoundException(OrderNotFoundException.INVALID_ID + id));
     }
 
-    public Object getWizard(String id) throws Exception {
-        String url = GET_WIZARD_ID + id;
-        try{
-            return restTemplate.getForObject(url, Object.class);
-        }catch (HttpClientErrorException e){
-            log.error("error:{}", e.getMessage());
-            throw new HttpClientErrorException(e.getStatusCode(), "error");
-            //throw new OrderException("external error", e);
-        }catch (HttpServerErrorException e){
-            log.error("server error:{}", e.getMessage());
-            throw new HttpServerErrorException(e.getStatusCode(), "error");
-        }
-    }
 
-    public Object getMagic(String id) throws Exception {
-        String url = GET_MAGIC_ID + id;
-        try{
-            return restTemplate.getForObject(url, Object.class);
-        }catch (HttpClientErrorException e){
-            log.error("error:{}", e.getMessage());
-            throw new HttpClientErrorException(e.getStatusCode(), "error");
-            //throw new OrderException("external error", e);
-        }catch (HttpServerErrorException e){
-            log.error("server error:{}", e.getMessage());
-            throw new HttpServerErrorException(e.getStatusCode(), "error");
-        }
-    }
+
+
 }
