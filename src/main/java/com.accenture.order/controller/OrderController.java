@@ -3,35 +3,47 @@ package com.accenture.order.controller;
 import com.accenture.order.entity.Order;
 import com.accenture.order.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.accenture.order.service.OrderService;
+import org.springframework.web.client.RestTemplate;
 
 @RestController
 @RequestMapping("/OrderApi")
 public class OrderController {
 
-    @Autowired
-    private final OrderService orderService;
+    //@Autowired
+    OrderService orderService;
 
-    private final OrderRepository repo;
+    private final OrderRepository orderRepository;
 
-    public OrderController(OrderService orderService, OrderRepository repo) {
+    public OrderController(OrderService orderService,
+                           OrderRepository orderRepository) {
         this.orderService = orderService;
-        this.repo = repo;
+        this.orderRepository = orderRepository;
+    }
+
+    @GetMapping("/order/{id}")
+    public ResponseEntity<?> order(@PathVariable(value = "id") Long id){
+       return ResponseEntity.ok(orderService.getOrderById(id));
     }
 
     @PostMapping("/add")
-    public ResponseEntity<?> addOrder(@RequestBody Order order){
-        Order newOrder = new Order();
-        newOrder.setWizard_name(order.getWizard_name());
-        newOrder.setMagic_name(order.getMagic_name());
-        newOrder.setAge_limit(order.getAge_limit());
+    @ResponseStatus(code = HttpStatus.ACCEPTED)
+    public String addOrder(@RequestBody Order order){
 
-        return ResponseEntity.ok(repo.save(newOrder));
+        return orderService.addOrder(order);
     }
 
+    @PutMapping("/update/{id}")
+    public void updateOrder(@PathVariable(value = "id") Long id, @RequestBody Order order){
+        orderService.updateOrder(id, order);
+    }
 
-
-
+    @DeleteMapping("/delete/{id}")
+    public void deleteOrder(@PathVariable(value = "id") Long id){
+        orderService.deleteOrder(id);
+    }
 }

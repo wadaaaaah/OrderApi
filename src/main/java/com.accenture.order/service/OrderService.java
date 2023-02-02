@@ -5,7 +5,6 @@ import com.accenture.order.entity.Order;
 import com.accenture.order.entity.WizardInfo;
 import com.accenture.order.exception.BadRequestException;
 import com.accenture.order.exception.OrderNotFoundException;
-import com.accenture.order.integration.OrderIntegration;
 import com.accenture.order.repository.OrderRepository;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -20,8 +19,6 @@ import java.util.List;
 public class OrderService {
 
     @Autowired
-    private OrderIntegration orderIntegration;
-    @Autowired
     OrderRepository repo;
     @Autowired
     private WizardInfoService wizard;
@@ -31,17 +28,18 @@ public class OrderService {
     RestTemplate restTemplate = new RestTemplate();
 
     public Order getOrderById(Long id){
-        return repo.findById(id).orElseThrow(() -> new OrderNotFoundException(OrderNotFoundException.INVALID_ID + id));
+        return repo.findById(id).orElseThrow(() ->
+                new OrderNotFoundException(OrderNotFoundException.INVALID_ID + id));
     }
 
     public boolean checkOrderExist(Order order)
     {
-        List<Order> existingOrder = (List<Order>) repo.findOrdersByWizardId(order.getWizard_id());
+        List<Order> existingOrder = repo.findOrdersByWizardId(order.getWizardId());
 
         for(Order checkOrder: existingOrder)
         {
-            if (checkOrder.getWizard_id().equals(order.getWizard_id())
-                    && checkOrder.getMagic_name().equals(order.getMagic_name()))
+            if (checkOrder.getWizardId().equals(order.getWizardId())
+                    && checkOrder.getMagicName().equals(order.getMagicName()))
             {
                 try {
                     throw new BadRequestException(BadRequestException.BAD_REQUEST);
@@ -49,7 +47,6 @@ public class OrderService {
                     throw new RuntimeException(e);
                 }
             }
-
             else
                 break;
         }
@@ -63,22 +60,22 @@ public class OrderService {
         if(!wizard.isActive())
             throw new BadRequestException("Cannot Add Order: Wizard is inactive");
         else if(magic.getStock() == 0)
-            throw new BadRequestException("Cannot Add Order: Wand is out of stock");
-        else if(wizard.getAge() < magic.getAge_limit())
+            throw new BadRequestException("Cannot Add Order: Magic Wand is out of stock");
+        else if(wizard.getAge() < magic.getAgeLimit())
             throw new BadRequestException("Cannot Add Order: Wizard's age is below the age requirement");
         else if(order.getStock() > magic.getStock())
-            throw new BadRequestException("Cannot Add Order: Quantity requested is more than available wand stock");
+            throw new BadRequestException("Cannot Add Order: Stock quantity requested is more than available magic wand stock");
         else
             return true;
     }
 
-    public void addOrder(Order order){
+    public String addOrder(Order order){
         boolean isOrderExist = checkOrderExist(order);
 
         if(isOrderExist == true)
         {
-            WizardInfo wizardInfo = wizard.getWizardInfobyId(order.getWizard_id()).getBody();
-            MagicWand magicWand = magic.getWandID(order.getMagic_id()).getBody();
+            WizardInfo wizardInfo = wizard.getWizardInfoById(order.getWizardId()).getBody();
+            MagicWand magicWand = magic.getMagicWandById(order.getMagicId()).getBody();
 
             if (wizardInfo != null && magicWand != null)
             {
@@ -88,9 +85,11 @@ public class OrderService {
                     magicWand.setStock(magicWand.getStock() - order.getStock());
                     magic.updateMagicWand(magicWand);
                     repo.save(order);
+
                 }
             }
         }
+        return "Order create successfully";
     }
 
     public void updateOrder(Long id, Order order){
@@ -98,17 +97,17 @@ public class OrderService {
 
         if(existingOrder != null)
         {
-            WizardInfo wizardInfo = wizard.getWizardInfobyId(order.getWizard_id()).getBody();
-            MagicWand magicWand = magic.getWandID(order.getMagic_id()).getBody();
+            WizardInfo wizardInfo = wizard.getWizardInfoById(order.getWizardId()).getBody();
+            MagicWand magicWand = magic.getMagicWandById(order.getMagicId()).getBody();
 
             if(wizardInfo != null && magicWand != null)
             {
                 boolean isOrderValid = validateOrderInfo(order, wizardInfo, magicWand);
                 if (isOrderValid == true) {
                     Order updateOrder = new Order();
-                    updateOrder.setOrder_id(id);
-                    updateOrder.setWizard_id(order.getWizard_id());
-                    updateOrder.setMagic_id(order.getMagic_id());
+                    updateOrder.setOrderId(id);
+                    updateOrder.setWizardId(order.getWizardId());
+                    updateOrder.setMagicId(order.getMagicId());
                     updateOrder.setStock(order.getStock());
 
                     if(existingOrder.getStock() < updateOrder.getStock())
@@ -132,6 +131,16 @@ public class OrderService {
 
     }
 
+    public void deleteOrder(Long id){
+        Order order = getOrderById(id);
+        MagicWand magicWand = magic.getMagicWandById(order.getMagicId()).getBody();
 
+        if(magicWand != null){
+            magicWand.setStock(magicWand.getStock() + order.getStock());
+            magic.updateMagicWand(magicWand);
+        }
+
+        repo.deleteById(id);
+    }
 
 }

@@ -1,20 +1,22 @@
 package com.accenture.order.entity;
 
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
+import lombok.Setter;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
-@Entity
-@Data
-@Table(name = "magic_wand")
+@Getter
+@Setter
 public class MagicWand {
 
-    @Id
+    @JsonProperty("id")
     Long id;
+    @JsonProperty("name")
     String name;
+    @JsonProperty("narrative")
     String narrative;
-    int age_limit;
+    @JsonProperty("age_limit")
+    int ageLimit;
+    @JsonProperty("stock")
     Long stock;
+
 }

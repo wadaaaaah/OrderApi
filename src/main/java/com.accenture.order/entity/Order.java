@@ -1,6 +1,5 @@
 package com.accenture.order.entity;
 
-import com.sun.istack.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,29 +13,30 @@ public class Order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long order_id;
+    @Column(name = "id", nullable = false)
+    Long orderId;
 
-    //@NotNull(message = "Wizard id should not be null")
-    Long wizard_id;
-
-    //@NotNull(message = "Wand id should not be null")
-    Long magic_id;
-    String magic_name;
-    String wizard_name;
+    @Column(name = "wizard_id")
+    Long wizardId;
+    @Column(name = "magic_id")
+    Long magicId;
+    @Column(name = "magic_name")
+    String magicName;
+    @Column(name = "wizard_name")
+    String wizardName;
+    @Column(name = "stock")
     int stock;
-    int age_limit;
+    @Column(name = "age_limit")
+    int ageLimit;
 
     public Order(){
 
     }
 
     public Order(Long orderId, Long wizardId, Long magicId, int stock){
-        this.order_id = orderId;
-        this.wizard_id = wizardId;
-        this.magic_id = magicId;
+        this.orderId = orderId;
+        this.wizardId = wizardId;
+        this.magicId = magicId;
         this.stock = stock;
     }
-
-
-
 }

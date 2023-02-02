@@ -2,6 +2,8 @@ package com.accenture.order.service;
 
 import com.accenture.order.common.OrderUrl;
 import com.accenture.order.entity.MagicWand;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
@@ -12,16 +14,17 @@ public class MagicWandService {
 
     RestTemplate restTemplate = new RestTemplate();
 
-    public ResponseEntity<MagicWand> getWandID(Long id){
+    public ResponseEntity<MagicWand> getMagicWandById(Long id){
         try {
             ResponseEntity<MagicWand> responseEntity =
-                    restTemplate.getForEntity(OrderUrl.GET_MAGIC_ID, MagicWand.class);
+                    restTemplate.exchange(OrderUrl.GET_MAGIC_ID, HttpMethod.GET, null,
+                            new ParameterizedTypeReference<MagicWand>() {});
             MagicWand magic = responseEntity.getBody();
 
             if(magic.getId() != null){
                 return ResponseEntity.ok().body(magic);
             }else{
-                throw new NullPointerException("magic id not found");
+                throw new NullPointerException("Magic wand id not found");
             }
         }catch(ResourceAccessException e){
             throw new ResourceAccessException("Error: Please check if MagicWand Service is online");
